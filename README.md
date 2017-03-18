@@ -46,3 +46,4 @@ You can order the pcb here : https://PCBs.io/share/z5YOZ
 * Added possibility to blink the "warning" led when insufficient battery
 * Added possibility to use this node without controler (need mysensors >= 2.1.0)
 * Disable smartsleep when not OTA used (increase battery life)
+
