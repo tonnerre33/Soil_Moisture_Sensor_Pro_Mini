@@ -1,0 +1,16 @@
+Qty;Value;Device;Package;Parts;Total;Description;Link
+1;;CONN_02;1X02;J1; $0,00 ;Pin Header 2,54;https://fr.aliexpress.com/item/Free-Shipping-10pcs-40-Pin-1x40-Single-Row-Male-2-54-Breakable-Pin-Header-Connector-Strip/32416951874.html
+2;;LED3MM;LED3MM;LED1, LED2; $0,03 ;LED;https://fr.aliexpress.com/item/5Colors-20PCS-100PCS-3mm-LED-diode-Light-Assorted-Kit-White-Yellow-Red-Green-Blue-component-DIY/32621058566.html
+1;0.1uF;C-EU025-025X050;C025-025X050;C2; $0,01 ;CAPACITOR, European symbol;https://fr.aliexpress.com/item/100pcs-Ceramic-Disc-Capacitors-50V-100nF-0-1uF-104pF/32517289931.html
+1;1M;R-EU_0204/7;0204/7;R1; $0,01 ;RESISTOR, European symbol;https://fr.aliexpress.com/item/1LOT-100PCS-Metal-Film-Axial-Resistors-1Mohm-1004-1-1-4W-1000000ohm-0-25W-metalfilm-resistor/32526441661.html
+2;1k5;R-EU_0204/7;0204/7;R3, R4; $0,01 ;RESISTOR, European symbol;https://fr.aliexpress.com/item/1LOT-100PCS-Metal-Film-Axial-Resistors-1-5Kohm-1501-1-1-4W-1500ohm-0-25W-passive/32528024970.html
+1;4.7uF;CPOL-USE2,5-6E;E2,5-6E;C1; $0,05 ;POLARIZED CAPACITOR, American symbol;https://fr.aliexpress.com/item/Free-shipping-100pcs-4-7UF-50V-Electrolytic-Capacitor-50V-4-7UF-Aluminum-Electrolytic-Capacitor-5X11mm/32314841833.html
+1;470K;R-EU_0204/7;0204/7;R2; $0,01 ;RESISTOR, European symbol;https://fr.aliexpress.com/item/1LOT-100PCS-Metal-Film-Axial-Resistors-470Kohm-4703-1-1-4W-470000ohm-0-25W-metalfilm-resistor/32528251389.html
+1;ABK-PRO-MINI;ABK-PRO-MINI;ABK-PRO-MINI;U$1; $1,85 ;Arduino Pro mini 3,3V 8Mhz;https://fr.aliexpress.com/item/Free-Shipping-5pcs-lot-Pro-Mini-328-Mini-3-3V-8M-ATMEGA328-3-3V-8MHz-for/32270348641.html
+1;NRF24L01;NRF24L01;2X4-2.54MM;RF1; $0,81 ;;https://fr.aliexpress.com/item/10Pcs-x-NRF24L01-Wireless-Module-2-4G-Wireless-Communication-Module-Upgrade-Module/1289649564.html
+1;;PCB;;; $1,76 ;;https://PCBs.io/share/z5YOZ
+1;;Female row pin header;;; $0,11 ; 2.54mm 40 Pin Female Single Row Pin Header Strip New  (optionnal);https://fr.aliexpress.com/item/10Pcs-2-54mm-40-Pin-Female-Single-Row-Pin-Header-Strip-New/32534250037.html
+1;;Soil moisture sensor;;; $0,26 ; Soil Hygrometer Detection;https://fr.aliexpress.com/item/5pcs-Soil-Hygrometer-Detection-Module-Soil-Moisture-Sensor-Probes/2038552686.html
+1;;Battery Cell Case Holder AAA;;; $0,33 ;Battery Cell Case Holder AAA;https://fr.aliexpress.com/item/5-X-2-Pieces-2-Pin-Black-Plastic-2-x-1-5V-AAA-Battery-Cell-Case/32652303392.html
+;;;;;;;
+;;;;TOTAL; $5,24 ;;
