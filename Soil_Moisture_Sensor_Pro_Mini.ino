@@ -25,9 +25,9 @@
 /**************************************************************************************/
 /* Moisture sensor Pro Mini                                                           */
 /*                                                                                    */
-/* Version     : V1.1.2                                                                 */
+/* Version     : V1.1.3                                                                 */
 /* Supported Hardware     : V1.1.x                                                    */
-/* Date        : 15/03/2017                                                           */
+/* Date        : 17/03/2017                                                           */
 /* Modified by : Jordan Bouey                                                         */
 /**************************************************************************************/
 
@@ -41,13 +41,17 @@
 //#define MY_DEBUG    // Enables debug messages in the serial log
 //#define MY_DEBUG_VERBOSE_SIGNING
 
+//Enable this if you want to use this node without controler and set MOISTURE_WARN_PCNT != 0
+//#define MY_TRANSPORT_WAIT_READY_MS 5000 //Set for use this node in standalone mode = no need a controler for run (need library mysensors >= 2.1.0) 
+
 // Enable and select radio type attached
 #define MY_RADIO_NRF24
+//#defin MY_OTA //Enables smart sleep if you use OTA
 //#define MY_OTA_FIRMWARE_FEATURE  // Enables OTA firmware updates if DualOptiBoot
 // Enables software signing
-#define MY_SIGNING_SOFT
+//#define MY_SIGNING_SOFT
 // SETTINGS FOR MY_SIGNING_SOFT
-#define MY_SIGNING_SOFT_RANDOMSEED_PIN 7  //!< Unconnected analog pin for random seed
+//#define MY_SIGNING_SOFT_RANDOMSEED_PIN 7  //!< Unconnected analog pin for random seed
 // Enable node whitelisting
 //#define MY_SIGNING_NODE_WHITELISTING {{.nodeId = 0,.serial = {0xEB,0x86,0x43,0x73,0x14,0xB1,0xAF,0x0E,0x17}}} 
 // Enable this if you want destination node to sign all messages sent to this node. 
@@ -65,25 +69,26 @@
 
 //Constants for MySensors
 #define SKETCH_NAME           "Moisture Sensor Pro Mini"
-#define SKETCH_VERSION        "1.1.2"
-
+#define SKETCH_VERSION        "1.1.3"
 
 #define CHILD_ID_VOLTAGE 0 // Id of the sensor child (default 0)
 #define CHILD_ID_MOISTURE 1   // Id of the sensor child (default 1)
 #define BATTERY_SENSE_PIN A0  // select the input pin for the battery sense point (default A0)
 #define LED_PIN_INFO 3 //INFO LED PIN (default 3)
-#define LED_PIN_WARN  4//WARNING LED PIN (default 4)
+#define LED_PIN_WARN  4 //WARNING LED PIN (default 4)
+#define MOISTURE_WARN_PCNT  0 //MOISTURE WARNING PERCENT (default 0) 0 = disabled
+#define BATTERY_WARN_PCNT  10 //BATTERY_WARN_PCNT WARNING PERCENT (default 10) 0 = disabled
+#define WARN_TIME  180000 //MOISTURE WARNING REPEAT TIME (in milliseconds) (default 180000)(3min)
 #define THRESHOLD             1.1     // Only make a new reading with reverse polarity if the change is larger than 10% (default 1.1)
-#define MOISTURE_THRESHOLD    1.01    // Delta needing for sending moisture to the controler (default 1.01)
+#define MOISTURE_THRESHOLD    1    // Delta needing for sending moisture to the controler in percent (default 1)
 #define STABILIZATION_TIME    2000    // Let the sensor stabilize before reading (default 2000)
 #define BATTERY_FULL          3300    // when full AAA (default 3300)
 #define BATTERY_ZERO          2340    // 2.34V limit for 328p at 8MHz (set extended fuse to 0x06 for BOD 1.8V or you'll never see 2.34V)  (default 2340)
 const int SENSOR_ANALOG_PINS[] = {A1, A2}; //(default {A1, A2})
-#ifndef MY_DEBUG
-  #define SLEEP_TIME            3600000 // Sleep time between reads (in milliseconds) (close to 1 hour)(default 3600000)
-#endif
 #ifdef MY_DEBUG
- #define SLEEP_TIME            1000 // Sleep time between reads (in milliseconds) (close to 1 sec) (default 1000)
+ #define SLEEP_TIME            1000 // Sleep time between reads (in milliseconds)(default 1000)(1 sec)
+#else
+ #define SLEEP_TIME            3600000 // Sleep time between reads (in milliseconds)(default 3600000)(1 hour)
 #endif
 
 
@@ -92,6 +97,8 @@ const int SENSOR_ANALOG_PINS[] = {A1, A2}; //(default {A1, A2})
 int oldbatteryPcnt = -1;
 byte direction = 0;
 int oldMoistureLevel = -1;
+int oldMoisturePcnt = -1;
+long sleepTime = SLEEP_TIME;
 
 MyMessage msgMoisture(CHILD_ID_MOISTURE, V_HUM);
 MyMessage msgVolt(CHILD_ID_VOLTAGE, V_VOLTAGE);
@@ -105,19 +112,13 @@ void presentation()
   #ifdef MY_DEBUG
     unsigned long startTime = millis();
   #endif
-
-  blinkLedFastly(3);
- 
+    
   //Start MySensors and send the sketch version information to the gateway
   sendSketchInfo(SKETCH_NAME, SKETCH_VERSION);
 
   //Register all sensors
   present(CHILD_ID_VOLTAGE, S_MULTIMETER);
   present(CHILD_ID_MOISTURE, S_MOISTURE);
-
-  
-  //Setup done !
-  blinkLedFastly(3);
 
     //Print setup debug
   #ifdef MY_DEBUG
@@ -134,15 +135,14 @@ void setup()
   pinMode(LED_PIN_INFO, OUTPUT);
   //Setup LED WARNING pin
    pinMode(LED_PIN_WARN, OUTPUT);
-
   //Set moisutre sensor pins
   for (int i = 0; i < N_ELEMENTS(SENSOR_ANALOG_PINS); i++)
     {
     pinMode(SENSOR_ANALOG_PINS[i], OUTPUT);
     digitalWrite(SENSOR_ANALOG_PINS[i], LOW);
-    }
-
-      
+    } 
+    //Setup done !
+    blinkLedFastly(3, LED_PIN_INFO);
 }
 
 /**************************************************************************************/
@@ -173,22 +173,33 @@ void loop()
   #ifdef MY_DEBUG
   Serial.print("Soil Value: ");
   Serial.println(moistureLevel);
-  send(msgMoisture.set((moistureLevel), 0));
   #endif
-   
- if (moistureLevel > (oldMoistureLevel * MOISTURE_THRESHOLD) || moistureLevel < (oldMoistureLevel / MOISTURE_THRESHOLD)) //Send moisture only if moisture changed more than MOISTURE_THRESHOLD
-  {
-      if (oldMoistureLevel == -1) {
-       send(msgMoisture.set((moistureLevel) / 10.23, 0));
-      }else{
-       send(msgMoisture.set((moistureLevel + oldMoistureLevel) / 2.0 / 10.23, 0));        
-      }
-    //Store current moisture level
-    oldMoistureLevel = moistureLevel;
-  }  
- 
+  if (oldMoistureLevel == -1) {
+     oldMoistureLevel = moistureLevel;    
+  }
 
+ // int moisturePcnt = (moistureLevel + oldMoistureLevel) / 2.0 / 10.23;
+    int moisturePcnt = moistureLevel / 10.23;
+  if (moistureLevel >= (oldMoistureLevel +  10.23 * MOISTURE_THRESHOLD) || moistureLevel <= (oldMoistureLevel - 10.23 * MOISTURE_THRESHOLD) || oldMoisturePcnt == -1) //Send moisture only if moisture changed more than MOISTURE_THRESHOLD (control change value percent and not a cast)
+  {   
+   if (moisturePcnt >= (oldMoisturePcnt +  MOISTURE_THRESHOLD) || moisturePcnt <= (oldMoisturePcnt - MOISTURE_THRESHOLD) || oldMoisturePcnt == -1) //Send moisture only if moisture percent changed more than MOISTURE_THRESHOLD (control if display changed)
+    {
+       send(msgMoisture.set(moisturePcnt)); 
+       blinkLedFastly(1, LED_PIN_INFO);       
+      //Store current moisture pcnt
+      oldMoisturePcnt = moisturePcnt;
+      //Store current moisture level 
+      oldMoistureLevel = moistureLevel;
+      
+    }  
+  }
 
+if(moisturePcnt < MOISTURE_WARN_PCNT)
+{
+ sleepTime = WARN_TIME;
+ blinkLedFastly(1, LED_PIN_WARN);
+}
+      
     //Report data to the gateway
     long voltage = getVoltageByHard();  
     int batteryPcnt = round((voltage - BATTERY_ZERO) * 100.0 / (BATTERY_FULL - BATTERY_ZERO));
@@ -202,9 +213,15 @@ void loop()
 
    }
 
+if(batteryPcnt < BATTERY_WARN_PCNT)
+{
+ sleepTime = WARN_TIME;
+ blinkLedFastly(3, LED_PIN_WARN);
+}
+
    //Print debug
   #ifdef MY_DEBUG
-    Serial.print((moistureLevel + oldMoistureLevel) / 2.0 / 10.23);
+    Serial.print(moisturePcnt);
     Serial.print("%");
     Serial.print("   ");
     Serial.print(batteryPcnt);
@@ -216,8 +233,12 @@ void loop()
   #endif 
   
  //Sleep until next measurement - smart sleep for OTA
-  blinkLedFastly(1);
-  smartSleep(SLEEP_TIME);
+  #ifdef MY_OTA
+    smartSleep(sleepTime);
+  #else
+    sleep(sleepTime);
+  #endif
+    
   }
 
 
@@ -246,13 +267,13 @@ int readMoisture()
 /**************************************************************************************/
 /* Allows to fastly blink the LED.                                                    */
 /**************************************************************************************/
-void blinkLedFastly(byte loop)
+void blinkLedFastly(byte loop, byte pinToBlink)
   {
   byte delayOn = 150;
   byte delayOff = 150;
   for (int i = 0; i < loop; i++)
     {
-    blinkLed(LED_PIN_INFO, delayOn);
+    blinkLed(pinToBlink, delayOn);
     delay(delayOff);
     }
   }
