@@ -36,9 +36,9 @@
   *  avec boot  ATmegaBOOT_168_atmega328_pro_8MHz.hex
   */
 
-//#define MY_NODE_ID 13
+//#define MY_NODE_ID 10
 
-#define MY_DEBUG    // Enables debug messages in the serial log
+//#define MY_DEBUG    // Enables debug messages in the serial log
 //#define MY_DEBUG_VERBOSE_SIGNING
 
 //Enable this if you want to use this node without controler and set MOISTURE_WARN_PCNT != 0
